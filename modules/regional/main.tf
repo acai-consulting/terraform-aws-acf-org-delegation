@@ -45,7 +45,7 @@ locals {
   auditmanager_admin_account_id = try([for d in var.delegations : d.target_account_id if  d.service_principal == "auditmanager.amazonaws.com"][0],  null)
 }
 
-resource "aws_auditmanager_organization_admin_account" "auditmanager" {
+resource "aws_auditmanager_organization_admin_account_registration" "auditmanager" {
   count = local.auditmanager_delegation ? 1 : 0
 
   admin_account_id = local.auditmanager_admin_account_id
@@ -174,7 +174,7 @@ resource "aws_macie2_account" "macie" {
   count = local.macie_delegation ? 1 : 0
 }
 
-resource "aws_macie_organization_admin_account" "macie" {
+resource "aws_macie2_organization_admin_account" "macie" {
   count = local.macie_delegation ? 1 : 0
 
   admin_account_id = local.macie_admin_account_id
