@@ -5,6 +5,7 @@ auditmanager.amazonaws.com
 config.amazonaws.com
 securityhub.amazonaws.com
 guardduty.amazonaws.com
+detective.amazonaws.com
 inspector2.amazonaws.com
 fms.amazonaws.com
 ipam.amazonaws.com
@@ -95,25 +96,17 @@ resource "aws_securityhub_organization_admin_account" "securityhub" {
 }
 
 
+
 # ---------------------------------------------------------------------------------------------------------------------
-# ¦ DELEGATION - guardduty.amazonaws.com
+# ¦ DELEGATION - detective.amazonaws.com
 # ---------------------------------------------------------------------------------------------------------------------
 locals {
-  guardduty_delegation = contains([for d in var.delegations : d.service_principal], "guardduty.amazonaws.com")
-  guardduty_admin_account_id = try([for d in var.delegations : d.target_account_id if  d.service_principal == "guardduty.amazonaws.com"][0],  null)
+  detective_delegation = contains([for d in var.delegations : d.service_principal], "detective.amazonaws.com")
+  detective_admin_account_id = try([for d in var.delegations : d.target_account_id if  d.service_principal == "detective.amazonaws.com"][0],  null)
 }
 
-resource "aws_guardduty_detector" "guardduty" {
-  count = local.guardduty_delegation ? 1 : 0
-}
-
-resource "aws_guardduty_organization_admin_account" "guardduty" {
-  count = local.guardduty_delegation ? 1 : 0
-
-  admin_account_id = local.guardduty_admin_account_id
-  depends_on       = [
-    aws_guardduty_detector.guardduty
-  ]
+resource "aws_detective_organization_admin_account" "detective" {
+  account_id = local.detective_admin_account_id
 }
 
 
