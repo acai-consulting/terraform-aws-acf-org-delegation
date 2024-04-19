@@ -24,35 +24,52 @@ data "aws_region" "current" {}
 # ¦ MODULE
 # ---------------------------------------------------------------------------------------------------------------------
 
-# in case you have an already existing AWS Organization with delegationst
-import {
-  to = module.example_complete.aws_organizations_organization.org_mgmt_root[0]
-  id = "o-5l2vzue7ku"
-}
-import {
-  to = module.example_complete.aws_organizations_delegated_administrator.delegations["guardduty.amazonaws.com:992382728088"]
-  id = "992382728088/guardduty.amazonaws.com"
-}
-import {
-  to = module.example_complete.aws_organizations_delegated_administrator.delegations["securityhub.amazonaws.com:992382728088"]
-  id = "992382728088/securityhub.amazonaws.com"
-}
-module "example_complete" {
-  source = "../../"
-
-  organization_settings = {
-    additional_aws_service_access_principals = ["fms.amazonaws.com"]
-  }
+locals {
+  default_regions = ["eu-central-1", "us-east-2"]
   delegations = [
+    {
+      service_principal = "fms.amazonaws.com"
+      target_account_id = "992382728088" // core_security
+      regions = ["us-east-1"]
+    },
     {
       service_principal = "guardduty.amazonaws.com"
       target_account_id = "992382728088" // core_security
+      regions = local.default_regions 
     },
     {
       service_principal = "securityhub.amazonaws.com"
       target_account_id = "992382728088" // core_security
+      regions = local.default_regions
+    },
+    {
+      service_principal = "cloudtrail.amazonaws.com"
+      target_account_id = "992382728088" // core_security
+      regions = local.default_regions
     }
   ]
+  aws_service_access_principals = [for delegation in local.delegations : delegation.service_principal]
+
+
+}
+
+module "preprocess_data" {
+  source = "../../modules/preprocess-data"
+  delegations = local.delegations
+}
+
+
+# in case you have an already existing AWS Organization with delegationst
+import {
+  to = module.example_global.aws_organizations_organization.org_mgmt_root[0]
+  id = "o-5l2vzue7ku"
+}
+module "example_global" {
+  source = "../../"
+
+  organization_settings = {
+    aws_service_access_principals = local.aws_service_access_principals
+  }
   aws_organizations_resource_policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -84,33 +101,53 @@ module "example_complete" {
       }
     ]
   })
+  delegated_administrators = local.delegations
   providers = {
-    aws = aws.org_mgmt
+    aws = aws.org_mgmt_use1
   }
 }
 
 
 import {
-  to = module.example_fms.aws_organizations_organization.org_mgmt_root
-  id = "o-5l2vzue7ku"
-}
-import {
-  to = module.example_fms.aws_fms_admin_account.fms[0]
+  to = module.example_euc1.aws_securityhub_organization_admin_account.securityhub[0]
   id = "992382728088"
 }
-module "example_fms" {
-  source = "../../"
+import {
+  to = module.example_euc1.aws_guardduty_detector.guardduty[0]
+  id = "92c77b63215272adb2a40c5e233be655"
+}
+module "example_euc1" {
+  source = "../../modules/regional"
 
-  delegations = [
-    {
-      service_principal = "fms.amazonaws.com"
-      target_account_id = "992382728088" // core_security
-    }
-  ]
+  delegations = module.preprocess_data.delegations_by_region["eu-central-1"]
   depends_on = [
-    module.example_complete
+    module.example_global
+  ]
+  providers = {
+    aws = aws.org_mgmt_euc1
+  }
+}
+
+module "example_use1" {
+  source = "../../modules/regional"
+
+  delegations = module.preprocess_data.delegations_by_region["us-east-1"]
+  depends_on = [
+    module.example_global
   ]
   providers = {
     aws = aws.org_mgmt_use1
+  }
+}
+
+module "example_use2" {
+  source = "../../modules/regional"
+
+  delegations = module.preprocess_data.delegations_by_region["us-east-2"]
+  depends_on = [
+    module.example_global
+  ]
+  providers = {
+    aws = aws.org_mgmt_use2
   }
 }
