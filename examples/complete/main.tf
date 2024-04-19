@@ -1,37 +1,8 @@
 # ---------------------------------------------------------------------------------------------------------------------
-# ¦ PROVIDER
-# ---------------------------------------------------------------------------------------------------------------------
-provider "aws" {
-  region = "eu-central-1"
-  # please use the target role you need.
-  # create additional providers in case your module provisions to multiple core accounts.
-  assume_role {
-    role_arn = "arn:aws:iam::471112796356:role/OrganizationAccountAccessRole"  # ACAI AWS Testbed Org-Mgmt Account
-    #role_arn = "arn:aws:iam::590183833356:role/OrganizationAccountAccessRole"  # ACAI AWS Testbed Core Logging Account
-    #role_arn = "arn:aws:iam::992382728088:role/OrganizationAccountAccessRole"  # ACAI AWS Testbed Core Security Account
-    #role_arn = "arn:aws:iam::767398146370:role/OrganizationAccountAccessRole"  # ACAI AWS Testbed Workload Account
-  }
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ¦ BACKEND
-# ---------------------------------------------------------------------------------------------------------------------
-terraform {
-  backend "remote" {
-    organization = "acai"
-    hostname     = "app.terraform.io"
-
-    workspaces {
-      name = "aws-testbed"
-    }
-  }
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
 # ¦ VERSIONS
 # ---------------------------------------------------------------------------------------------------------------------
 terraform {
-  required_version = ">= 1.0.0"
+  required_version = ">= 1.3.0"
 
   required_providers {
     aws = {
@@ -48,16 +19,61 @@ terraform {
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# ---------------------------------------------------------------------------------------------------------------------
-# ¦ LOCALS
-# ---------------------------------------------------------------------------------------------------------------------
-locals {}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ MODULE
 # ---------------------------------------------------------------------------------------------------------------------
+
+# in case you have an already existing AWS Organization 
+import {
+  to = module.example_complete.aws_organizations_organization.org_mgmt_root
+  id = "o-5l2vzue7ku"
+}
 module "example_complete" {
   source = "../../"
 
-  input_variable = "value1"
+  delegations = [
+    {
+      service_principal = "guardduty.amazonaws.com"
+      target_account_id = "992382728088" // core_security
+    },
+    {
+      service_principal = "fms.amazonaws.com"
+      target_account_id = "992382728088" // core_security
+    }    
+  ]
+  aws_organizations_resource_policy_json = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Sid" : "AllowOrganizationsRead",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "arn:aws:iam::590183833356:root"
+        },
+        "Action" : [
+          "organizations:Describe*",
+          "organizations:List*"
+        ],
+        "Resource" : "*"
+      },
+      {
+        "Sid" : "AllowBackupPoliciesCreation",
+        "Effect" : "Allow",
+        "Principal" : {
+          "AWS" : "arn:aws:iam::590183833356:root"
+        },
+        "Action" : "organizations:CreatePolicy",
+        "Resource" : "*",
+        "Condition" : {
+          "StringEquals" : {
+            "organizations:PolicyType" : "BACKUP_POLICY"
+          }
+        }
+      }
+    ]
+  })
+  providers = {
+    aws = aws.org_mgmt
+  }
 }
