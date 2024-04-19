@@ -106,6 +106,8 @@ locals {
 }
 
 resource "aws_detective_organization_admin_account" "detective" {
+  count = local.detective_delegation ? 1 : 0
+
   account_id = local.detective_admin_account_id
 }
 
@@ -137,7 +139,6 @@ resource "aws_fms_admin_account" "fms" {
   count = local.fms_delegation ? 1 : 0
 
   account_id = local.fms_admin_account_id
-
   lifecycle {
     precondition {
       condition     = data.aws_region.current.name == "us-east-1"
