@@ -101,13 +101,13 @@ module "example_global" {
       }
     ]
   })
-  delegated_administrators = local.delegations
+  delegated_administrators = module.preprocess_data.delegated_administrators
   providers = {
     aws = aws.org_mgmt_use1
   }
 }
 
-
+/*
 import {
   to = module.example_euc1.aws_securityhub_organization_admin_account.securityhub[0]
   id = "992382728088"
@@ -115,7 +115,7 @@ import {
 import {
   to = module.example_euc1.aws_guardduty_detector.guardduty[0]
   id = "92c77b63215272adb2a40c5e233be655"
-}
+}*/
 module "example_euc1" {
   source = "../../modules/regional"
 
@@ -128,6 +128,10 @@ module "example_euc1" {
   }
 }
 
+import {
+  to = module.example_use1.aws_fms_admin_account.fms[0]
+  id = "992382728088"
+}
 module "example_use1" {
   source = "../../modules/regional"
 

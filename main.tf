@@ -29,10 +29,7 @@ locals {
 }
 resource "aws_organizations_organization" "org_mgmt_root" {
   count = var.organization_settings == null ? 0 : 1
-  aws_service_access_principals = concat(
-    var.organization_settings.additional_aws_service_access_principals,
-    [for delegation in var.delegations : delegation.service_principal]
-  )
+  aws_service_access_principals = var.organization_settings.aws_service_access_principals
   enabled_policy_types          = var.organization_settings.enabled_policy_types
   feature_set                   = var.organization_settings.feature_set
   lifecycle {

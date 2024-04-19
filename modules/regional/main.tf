@@ -21,49 +21,20 @@ data "aws_region" "current" {}
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-# ¦ BASIC SETTINGS
+# ¦ DELEGATION - AWS CONFIG
 # ---------------------------------------------------------------------------------------------------------------------
 locals {
-  org_mgmt_root = var.organization_settings == null ? data.aws_organizations_organization.org_mgmt_root[0] : aws_organizations_organization.org_mgmt_root[0]
-}
-resource "aws_organizations_organization" "org_mgmt_root" {
-  count = var.organization_settings == null ? 0 : 1
-  aws_service_access_principals = concat(
-    var.organization_settings.additional_aws_service_access_principals,
-    [for delegation in var.delegations : delegation.service_principal]
-  )
-  enabled_policy_types          = var.organization_settings.enabled_policy_types
-  feature_set                   = var.organization_settings.feature_set
-  lifecycle {
-    prevent_destroy = true
-  }
+  config_delegation = contains([for d in var.delegations : d.service_principal], "config.amazonaws.com")
+  config_admin_account_id = try([for d in var.delegations : d.target_account_id if  d.service_principal == "config.amazonaws.com"][0],  null)
+  config_aggregation_region = try([for d in var.delegations : d.aggregation_region if  d.service_principal == "config.amazonaws.com"][0],  null)
 }
 
-data "aws_organizations_organization" "org_mgmt_root" {
-  count = var.organization_settings == null ? 1 : 0
+resource "aws_config_aggregate_authorization" "config_delegation" {
+  count = local.config_delegation ? 1 : 0
+
+  account_id = local.config_admin_account_id
+  region     = local.config_aggregation_region
 }
-
-# See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html
-resource "aws_organizations_resource_policy" "aws_organizations_resource_policy" {
-  count = var.aws_organizations_resource_policy_json == null ? 0 : 1
-  content = var.aws_organizations_resource_policy_json
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ¦ DELEGATIONS
-# ---------------------------------------------------------------------------------------------------------------------
-# See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html?icmpid=docs_orgs_console
-resource "aws_organizations_delegated_administrator" "delegations" {
-  for_each = { for del in var.delegations : "${del.service_principal}:${del.target_account_id}" => del }
-
-  account_id        = each.value.target_account_id
-  service_principal = each.value.service_principal
-  depends_on = [
-    local.org_mgmt_root
-  ]
-}
-
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DELEGATION - SECURITY HUB
@@ -88,7 +59,6 @@ resource "aws_securityhub_organization_admin_account" "securityhub" {
 
   admin_account_id = local.securityhub_admin_account_id
   depends_on       = [
-    local.org_mgmt_root,
     aws_securityhub_account.securityhub
   ]
 }
@@ -110,7 +80,6 @@ resource "aws_guardduty_organization_admin_account" "guardduty" {
 
   admin_account_id = local.guardduty_admin_account_id
   depends_on       = [
-    local.org_mgmt_root,
     aws_guardduty_detector.guardduty
   ]
 }
@@ -134,7 +103,4 @@ resource "aws_fms_admin_account" "fms" {
       error_message = "FMS can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
     }
   }
-  depends_on = [
-    local.org_mgmt_root
-  ]
 }

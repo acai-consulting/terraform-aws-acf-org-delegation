@@ -1,3 +1,8 @@
+output "delegated_administrators" {
+  description = "List of delegated admins."
+  value = local.delegated_administrators
+}
+
 output "delegations_by_region" {
   description = "List of delegations per region."
   value = local.delegations_by_region

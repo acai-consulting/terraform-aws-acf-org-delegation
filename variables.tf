@@ -37,7 +37,7 @@ variable "delegated_administrators" {
   default = []
 
   validation {
-    condition     = alltrue([for d in var.delegdelegated_administratorsations : can(regex("^\\d{12}$", d.target_account_id))])
+    condition     = alltrue([for d in var.delegated_administrators : can(regex("^\\d{12}$", d.target_account_id))])
     error_message = "Each 'target_account_id' must be a 12-digit AWS account ID."
   }
 }
