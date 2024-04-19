@@ -24,23 +24,34 @@ data "aws_region" "current" {}
 # ¦ MODULE
 # ---------------------------------------------------------------------------------------------------------------------
 
-# in case you have an already existing AWS Organization 
+# in case you have an already existing AWS Organization with delegationst
 import {
-  to = module.example_complete.aws_organizations_organization.org_mgmt_root
+  to = module.example_complete.aws_organizations_organization.org_mgmt_root[0]
   id = "o-5l2vzue7ku"
+}
+import {
+  to = module.example_complete.aws_organizations_delegated_administrator.delegations["guardduty.amazonaws.com:992382728088"]
+  id = "992382728088/guardduty.amazonaws.com"
+}
+import {
+  to = module.example_complete.aws_organizations_delegated_administrator.delegations["securityhub.amazonaws.com:992382728088"]
+  id = "992382728088/securityhub.amazonaws.com"
 }
 module "example_complete" {
   source = "../../"
 
+  organization_settings = {
+    additional_aws_service_access_principals = ["fms.amazonaws.com"]
+  }
   delegations = [
     {
       service_principal = "guardduty.amazonaws.com"
       target_account_id = "992382728088" // core_security
     },
     {
-      service_principal = "fms.amazonaws.com"
+      service_principal = "securityhub.amazonaws.com"
       target_account_id = "992382728088" // core_security
-    }    
+    }
   ]
   aws_organizations_resource_policy_json = jsonencode({
     "Version" : "2012-10-17",
@@ -75,5 +86,31 @@ module "example_complete" {
   })
   providers = {
     aws = aws.org_mgmt
+  }
+}
+
+
+import {
+  to = module.example_fms.aws_organizations_organization.org_mgmt_root
+  id = "o-5l2vzue7ku"
+}
+import {
+  to = module.example_fms.aws_fms_admin_account.fms[0]
+  id = "992382728088"
+}
+module "example_fms" {
+  source = "../../"
+
+  delegations = [
+    {
+      service_principal = "fms.amazonaws.com"
+      target_account_id = "992382728088" // core_security
+    }
+  ]
+  depends_on = [
+    module.example_complete
+  ]
+  providers = {
+    aws = aws.org_mgmt_use1
   }
 }
