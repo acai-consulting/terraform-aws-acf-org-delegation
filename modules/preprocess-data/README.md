@@ -20,7 +20,7 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_additional_aws_service_access_principals"></a> [additional\_aws\_service\_access\_principals](#input\_additional\_aws\_service\_access\_principals) | https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html | `list(string)` | `[]` | no |
-| <a name="input_delegations"></a> [delegations](#input\_delegations) | List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators. | <pre>list(object({<br>    regions : list(string)<br>    service_principal : string // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html<br>    target_account_id : string<br>    aggregation_region : optional(string)<br>    additional_settings = optional(map(string))<br>  }))</pre> | `[]` | no |
+| <a name="input_delegations"></a> [delegations](#input\_delegations) | List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators. | <pre>list(object({<br>    regions : list(string)<br>    service_principal : string # https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html<br>    target_account_id : string<br>    aggregation_region : optional(string)<br>    additional_settings = optional(map(string))<br>  }))</pre> | `[]` | no |
 
 ## Outputs
 
