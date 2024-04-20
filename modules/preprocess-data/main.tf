@@ -7,18 +7,19 @@ locals {
   delegated_administrators = [
     for delegation in var.delegations :
     {
-      service_principal  = delegation.service_principal,
-      target_account_id  = delegation.target_account_id
-    } 
+      service_principal = delegation.service_principal,
+      target_account_id = delegation.target_account_id
+    }
   ]
 
   delegations_by_region = {
     for region in local.regions_flattened : region => [
       for delegation in var.delegations :
       {
-        service_principal  = delegation.service_principal,
-        target_account_id  = delegation.target_account_id
-        aggregation_region = delegation.aggregation_region
+        service_principal   = delegation.service_principal,
+        target_account_id   = delegation.target_account_id
+        aggregation_region  = delegation.aggregation_region
+        additional_settings = delegation.additional_settings
       } if contains(delegation.regions, region)
     ]
   }

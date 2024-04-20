@@ -36,10 +36,13 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 data "aws_region" "current" {}
 
+locals {
+  is_use1 = data.aws_region.current.name == "us-east-1" 
+}
 
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html
 resource "aws_organizations_resource_policy" "aws_organizations_resource_policy" {
-  count = var.aws_organizations_resource_policy_json == null ? 0 : 1
+  count   = var.aws_organizations_resource_policy_json == null ? 0 : 1
   content = var.aws_organizations_resource_policy_json
 }
 
@@ -61,8 +64,8 @@ locals {
   ]
   common_delegations = [for delegation in var.delegations :
     {
-      service_principal  = delegation.service_principal,
-      target_account_id  = delegation.target_account_id
+      service_principal = delegation.service_principal,
+      target_account_id = delegation.target_account_id
     } if !contains(local.special_delegations, delegation.service_principal)
   ]
 }
@@ -108,10 +111,13 @@ resource "aws_config_aggregate_authorization" "config_delegation" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DELEGATION - securityhub.amazonaws.com
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_organization_admin_account
+# https://docs.aws.amazon.com/securityhub/latest/userguide/central-configuration-intro.html
 # ---------------------------------------------------------------------------------------------------------------------
 locals {
-  securityhub_delegation       = contains([for d in var.delegations : d.service_principal], "securityhub.amazonaws.com")
-  securityhub_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "securityhub.amazonaws.com"][0], null)
+  securityhub_delegation          = contains([for d in var.delegations : d.service_principal], "securityhub.amazonaws.com")
+  securityhub_admin_account_id    = try([for d in var.delegations : d.target_account_id if d.service_principal == "securityhub.amazonaws.com"][0], null)
+  securityhub_additional_settings = try([for d in var.delegations : d.additional_settings if d.service_principal == "securityhub.amazonaws.com"][0], null)
 }
 
 resource "aws_securityhub_account" "securityhub" {
@@ -133,9 +139,9 @@ resource "aws_securityhub_organization_admin_account" "securityhub" {
   ]
 }
 
-
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DELEGATION - guardduty.amazonaws.com
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_organization_admin_account
 # ---------------------------------------------------------------------------------------------------------------------
 locals {
   guardduty_delegation       = contains([for d in var.delegations : d.service_principal], "guardduty.amazonaws.com")

@@ -4,6 +4,7 @@ variable "delegations" {
     service_principal : string // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
     target_account_id : string
     aggregation_region : optional(string)
+    additional_settings = optional(map(string))
   }))
   default = []
 
