@@ -11,10 +11,7 @@ output "delegations_by_region" {
 // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
 output "aws_service_access_principals" {
   description = "Consolidated distinct list of aws_service_access_principals"
-  value = distinct(concat(
-    var.additional_aws_service_access_principals,
-    [for delegation in var.delegations : delegation.service_principal]
-  ))
+  value = local.aws_service_access_principals
 }
 
 

@@ -27,6 +27,7 @@ data "aws_region" "current" {}
 locals {
   default_regions = ["eu-central-1", "us-east-2"]
   delegations = [
+
     {
       service_principal = "fms.amazonaws.com"
       target_account_id = "992382728088" // core_security
@@ -45,19 +46,18 @@ locals {
     {
       service_principal = "cloudtrail.amazonaws.com"
       target_account_id = "992382728088" // core_security
-      regions = local.default_regions
-    }
+      regions = local.default_regions 
+    },    
   ]
-  aws_service_access_principals = [for delegation in local.delegations : delegation.service_principal]
-
-
 }
 
 module "preprocess_data" {
   source = "../../modules/preprocess-data"
   delegations = local.delegations
+  additional_aws_service_access_principals = [
+    "stacksets.cloudformation.amazonaws.com"
+  ]
 }
-
 
 # in case you have an already existing AWS Organization with delegationst
 import {
@@ -68,7 +68,7 @@ module "example_global" {
   source = "../../"
 
   organization_settings = {
-    aws_service_access_principals = local.aws_service_access_principals
+    aws_service_access_principals = module.preprocess_data.aws_service_access_principals
   }
   aws_organizations_resource_policy_json = jsonencode({
     "Version" : "2012-10-17",
@@ -103,7 +103,7 @@ module "example_global" {
   })
   delegated_administrators = module.preprocess_data.delegated_administrators
   providers = {
-    aws = aws.org_mgmt_use1
+    aws = aws.org_mgmt
   }
 }
 
