@@ -40,11 +40,23 @@ locals {
   is_use1 = data.aws_region.current.name == "us-east-1"
 }
 
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ AWS ORGANIZATIONS RESOURCE POLICY
+# ---------------------------------------------------------------------------------------------------------------------
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html
 resource "aws_organizations_resource_policy" "aws_organizations_resource_policy" {
   count   = var.aws_organizations_resource_policy_json == null ? 0 : 1
+
   content = var.aws_organizations_resource_policy_json
+  lifecycle {
+    precondition {
+      condition     = local.is_use1
+      error_message = "The  can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
+    }
+  }
 }
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DELEGATIONS
@@ -148,6 +160,7 @@ locals {
 }
 
 resource "aws_guardduty_detector" "guardduty" {
+  #checkov:skip=CKV2_AWS_3
   count = local.guardduty_delegation ? 1 : 0
 }
 
