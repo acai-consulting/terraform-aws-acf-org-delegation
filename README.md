@@ -90,32 +90,40 @@ locals {
 
 ## Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_delegation"></a> [delegation](#module\_delegation) | ./modules/delegation | n/a |
-| <a name="module_ou_structure"></a> [ou\_structure](#module\_ou\_structure) | ./modules/ou-structure | n/a |
+No modules.
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [aws_organizations_organization.organization](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/organizations_organization) | data source |
+| [aws_auditmanager_organization_admin_account_registration.auditmanager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/auditmanager_organization_admin_account_registration) | resource |
+| [aws_config_aggregate_authorization.config_delegation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/config_aggregate_authorization) | resource |
+| [aws_detective_organization_admin_account.detective](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/detective_organization_admin_account) | resource |
+| [aws_fms_admin_account.fms](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fms_admin_account) | resource |
+| [aws_guardduty_detector.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector) | resource |
+| [aws_guardduty_organization_admin_account.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_organization_admin_account) | resource |
+| [aws_inspector2_delegated_admin_account.inspector](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/inspector2_delegated_admin_account) | resource |
+| [aws_macie2_account.macie](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/macie2_account) | resource |
+| [aws_macie2_organization_admin_account.macie](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/macie2_organization_admin_account) | resource |
+| [aws_organizations_delegated_administrator.delegations](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/organizations_delegated_administrator) | resource |
+| [aws_organizations_resource_policy.aws_organizations_resource_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/organizations_resource_policy) | resource |
+| [aws_securityhub_account.securityhub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_account) | resource |
+| [aws_securityhub_organization_admin_account.securityhub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_organization_admin_account) | resource |
+| [aws_vpc_ipam_organization_admin_account.ipam](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_ipam_organization_admin_account) | resource |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_delegations"></a> [delegations](#input\_delegations) | List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators. | <pre>list(object({<br>    target_account_id : string<br>    service_principal : string<br>  }))</pre> | `[]` | no |
-| <a name="input_organizational_units"></a> [organizational\_units](#input\_organizational\_units) | The organization with the tree of organizational units and their tags. | <pre>object({<br>    level1_units = optional(list(object({<br>      name    = string,<br>      scp_ids = optional(list(string), [])<br>      tags    = optional(map(string), {}),<br>      level2_units = optional(list(object({<br>        name    = string,<br>        scp_ids = optional(list(string), [])<br>        tags    = optional(map(string), {}),<br>        level3_units = optional(list(object({<br>          name    = string,<br>          scp_ids = optional(list(string), [])<br>          tags    = optional(map(string), {}),<br>          level4_units = optional(list(object({<br>            name    = string,<br>            scp_ids = optional(list(string), [])<br>            tags    = optional(map(string), {}),<br>            level5_units = optional(list(object({<br>              name    = string,<br>              scp_ids = optional(list(string), [])<br>              tags    = optional(map(string), {}),<br>            })), [])<br>          })), [])<br>        })), [])<br>      })), [])<br>    })), [])<br>  })</pre> | `null` | no |
+| <a name="input_aws_organizations_resource_policy_json"></a> [aws\_organizations\_resource\_policy\_json](#input\_aws\_organizations\_resource\_policy\_json) | JSON of the AWS Organizations Delegation. | `string` | `null` | no |
+| <a name="input_delegations"></a> [delegations](#input\_delegations) | List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators. | <pre>list(object({<br>    service_principal : string // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html<br>    target_account_id : string<br>    aggregation_region : optional(string)<br>    additional_settings = optional(map(string))<br>  }))</pre> | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_delegation"></a> [delegation](#output\_delegation) | List of delegations. |
-| <a name="output_organization_id"></a> [organization\_id](#output\_organization\_id) | The ID of the AWS Organization. |
-| <a name="output_ou_structure"></a> [ou\_structure](#output\_ou\_structure) | List of provisioned OUs. |
-| <a name="output_root_ou_id"></a> [root\_ou\_id](#output\_root\_ou\_id) | The ID of the root organizational unit. |
+| <a name="output_delegations"></a> [delegations](#output\_delegations) | List of AWS Organizations Delegated Administrators created. |
 <!-- END_TF_DOCS -->
 
 <!-- AUTHORS -->
