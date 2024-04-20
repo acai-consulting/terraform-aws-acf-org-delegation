@@ -115,8 +115,8 @@ resource "aws_config_aggregate_authorization" "config_delegation" {
 # https://docs.aws.amazon.com/securityhub/latest/userguide/central-configuration-intro.html
 # ---------------------------------------------------------------------------------------------------------------------
 locals {
-  securityhub_delegation          = contains([for d in var.delegations : d.service_principal], "securityhub.amazonaws.com")
-  securityhub_admin_account_id    = try([for d in var.delegations : d.target_account_id if d.service_principal == "securityhub.amazonaws.com"][0], null)
+  securityhub_delegation       = contains([for d in var.delegations : d.service_principal], "securityhub.amazonaws.com")
+  securityhub_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "securityhub.amazonaws.com"][0], null)
 }
 
 resource "aws_securityhub_account" "securityhub" {
