@@ -2,7 +2,7 @@ variable "delegations" {
   description = "List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators."
   type = list(object({
     regions : list(string)
-    service_principal : string // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
+    service_principal : string # https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
     target_account_id : string
     aggregation_region : optional(string)
     additional_settings = optional(map(string))
@@ -15,7 +15,7 @@ variable "delegations" {
   }
 }
 
-// https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
+# https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
 variable "additional_aws_service_access_principals" {
   type    = list(string)
   default = []

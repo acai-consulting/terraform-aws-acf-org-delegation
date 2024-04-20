@@ -117,7 +117,6 @@ resource "aws_config_aggregate_authorization" "config_delegation" {
 locals {
   securityhub_delegation          = contains([for d in var.delegations : d.service_principal], "securityhub.amazonaws.com")
   securityhub_admin_account_id    = try([for d in var.delegations : d.target_account_id if d.service_principal == "securityhub.amazonaws.com"][0], null)
-  securityhub_additional_settings = try([for d in var.delegations : d.additional_settings if d.service_principal == "securityhub.amazonaws.com"][0], null)
 }
 
 resource "aws_securityhub_account" "securityhub" {
@@ -125,7 +124,7 @@ resource "aws_securityhub_account" "securityhub" {
 
   lifecycle {
     ignore_changes = [
-      control_finding_generator // https://github.com/hashicorp/terraform-provider-aws/issues/30980
+      control_finding_generator # https://github.com/hashicorp/terraform-provider-aws/issues/30980
     ]
   }
 }
@@ -206,7 +205,7 @@ resource "aws_fms_admin_account" "fms" {
   account_id = local.fms_admin_account_id
   lifecycle {
     precondition {
-      condition     = data.aws_region.current.name == "us-east-1"
+      condition     = local.is_use1
       error_message = "FMS can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
     }
   }

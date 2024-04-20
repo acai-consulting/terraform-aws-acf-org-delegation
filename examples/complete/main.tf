@@ -30,17 +30,17 @@ locals {
     {
       regions           = ["us-east-1"]
       service_principal = "fms.amazonaws.com"
-      target_account_id = "992382728088" // core_security
+      target_account_id = "992382728088" # core_security
     },
     {
       regions           = local.default_regions
       service_principal = "guardduty.amazonaws.com"
-      target_account_id = "992382728088" // core_security      
+      target_account_id = "992382728088" # core_security      
     },
     {
       regions           = local.default_regions
       service_principal = "securityhub.amazonaws.com"
-      target_account_id = "992382728088" // core_security
+      target_account_id = "992382728088" # core_security
       additional_settings = {
         auto_enable = true
       }
@@ -48,7 +48,7 @@ locals {
     {
       regions           = local.default_regions
       service_principal = "cloudtrail.amazonaws.com"
-      target_account_id = "992382728088" // core_security
+      target_account_id = "992382728088" # core_security
     },
   ]
 }

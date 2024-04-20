@@ -1,5 +1,5 @@
 locals {
-  // Assuming local.default_regions is defined somewhere else in your Terraform configuration
+  # Assuming local.default_regions is defined somewhere else in your Terraform configuration
   regions_flattened = distinct(flatten([
     for delegation in var.delegations : delegation.regions
   ]))
