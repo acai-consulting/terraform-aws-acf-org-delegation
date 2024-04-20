@@ -28,17 +28,17 @@ locals {
   default_regions = ["eu-central-1", "us-east-2"]
   delegations = [
     {
-      regions = ["us-east-1"]
+      regions           = ["us-east-1"]
       service_principal = "fms.amazonaws.com"
       target_account_id = "992382728088" // core_security
     },
     {
-      regions = local.default_regions 
+      regions           = local.default_regions
       service_principal = "guardduty.amazonaws.com"
       target_account_id = "992382728088" // core_security      
     },
     {
-      regions = local.default_regions
+      regions           = local.default_regions
       service_principal = "securityhub.amazonaws.com"
       target_account_id = "992382728088" // core_security
       additional_settings = {
@@ -46,15 +46,15 @@ locals {
       }
     },
     {
-      regions = local.default_regions 
+      regions           = local.default_regions
       service_principal = "cloudtrail.amazonaws.com"
       target_account_id = "992382728088" // core_security
-    },    
+    },
   ]
 }
 
 module "preprocess_data" {
-  source = "../../modules/preprocess-data"
+  source      = "../../modules/preprocess-data"
   delegations = local.delegations
   additional_aws_service_access_principals = [
     "stacksets.cloudformation.amazonaws.com"

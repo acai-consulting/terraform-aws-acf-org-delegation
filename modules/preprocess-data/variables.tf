@@ -17,6 +17,6 @@ variable "delegations" {
 
 // https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
 variable "additional_aws_service_access_principals" {
-  type = list(string)
+  type    = list(string)
   default = []
 }

@@ -37,7 +37,7 @@ terraform {
 data "aws_region" "current" {}
 
 locals {
-  is_use1 = data.aws_region.current.name == "us-east-1" 
+  is_use1 = data.aws_region.current.name == "us-east-1"
 }
 
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html
