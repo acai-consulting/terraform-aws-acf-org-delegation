@@ -59,17 +59,31 @@ module "preprocess_data" {
   ]
 }
 
-# in case you have an already existing AWS Organization with delegationst
 import {
-  to = module.example_global.aws_organizations_organization.org_mgmt_root[0]
-  id = "o-5l2vzue7ku"
+  to = module.example_euc1.aws_securityhub_organization_admin_account.securityhub[0]
+  id = "992382728088"
 }
-module "example_global" {
+import {
+  to = module.example_euc1.aws_guardduty_detector.guardduty[0]
+  id = "90c77d2e9819eea01a714830cab690e1"
+}
+module "example_euc1" {
   source = "../../"
 
-  organization_settings = {
-    aws_service_access_principals = module.preprocess_data.aws_service_access_principals
+  delegations = module.preprocess_data.delegations_by_region["eu-central-1"]
+  providers = {
+    aws = aws.org_mgmt_euc1
   }
+}
+
+import {
+  to = module.example_use1.aws_fms_admin_account.fms[0]
+  id = "992382728088"
+}
+module "example_use1" {
+  source = "../../"
+
+  delegations = module.preprocess_data.delegations_by_region["us-east-1"]
   aws_organizations_resource_policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -101,56 +115,23 @@ module "example_global" {
       }
     ]
   })
-  delegated_administrators = module.preprocess_data.delegated_administrators
-  providers = {
-    aws = aws.org_mgmt
-  }
-}
-
-/*
-import {
-  to = module.example_euc1.aws_securityhub_organization_admin_account.securityhub[0]
-  id = "992382728088"
-}
-import {
-  to = module.example_euc1.aws_guardduty_detector.guardduty[0]
-  id = "92c77b63215272adb2a40c5e233be655"
-}*/
-module "example_euc1" {
-  source = "../../modules/regional"
-
-  delegations = module.preprocess_data.delegations_by_region["eu-central-1"]
-  depends_on = [
-    module.example_global
-  ]
-  providers = {
-    aws = aws.org_mgmt_euc1
-  }
-}
-
-import {
-  to = module.example_use1.aws_fms_admin_account.fms[0]
-  id = "992382728088"
-}
-module "example_use1" {
-  source = "../../modules/regional"
-
-  delegations = module.preprocess_data.delegations_by_region["us-east-1"]
-  depends_on = [
-    module.example_global
-  ]
   providers = {
     aws = aws.org_mgmt_use1
   }
 }
 
+import {
+  to = module.example_use2.aws_securityhub_organization_admin_account.securityhub[0]
+  id = "992382728088"
+}
+import {
+  to = module.example_use2.aws_guardduty_detector.guardduty[0]
+  id = "28c77d2e98f23d78fb16e74b8013720f"
+}
 module "example_use2" {
-  source = "../../modules/regional"
+  source = "../../"
 
   delegations = module.preprocess_data.delegations_by_region["us-east-2"]
-  depends_on = [
-    module.example_global
-  ]
   providers = {
     aws = aws.org_mgmt_use2
   }
