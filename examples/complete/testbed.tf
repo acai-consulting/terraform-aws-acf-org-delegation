@@ -10,6 +10,30 @@ provider "aws" {
 }
 
 provider "aws" {
+  region  = "us-east-1"
+  alias   = "org_mgmt_use1"
+  assume_role {
+    role_arn = "arn:aws:iam::471112796356:role/OrganizationAccountAccessRole" # ACAI AWS Testbed Org-Mgmt Account
+  }
+}
+
+provider "aws" {
+  region  = "us-east-2"
+  alias   = "org_mgmt_use2"
+  assume_role {
+    role_arn = "arn:aws:iam::471112796356:role/OrganizationAccountAccessRole" # ACAI AWS Testbed Org-Mgmt Account
+  }
+}
+
+provider "aws" {
+  region  = "eu-central-1"
+  alias   = "org_mgmt_euc1"
+  assume_role {
+    role_arn = "arn:aws:iam::471112796356:role/OrganizationAccountAccessRole" # ACAI AWS Testbed Org-Mgmt Account
+  }
+}
+
+provider "aws" {
   region = "eu-central-1"
   alias  = "core_logging"
   assume_role {
