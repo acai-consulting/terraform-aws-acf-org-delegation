@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestExampleComplete(t *testing.T) {
@@ -19,10 +20,10 @@ func TestExampleComplete(t *testing.T) {
 	defer terraform.Destroy(t, terraformOptions)
 	terraform.InitAndApply(t, terraformOptions)
 
-	accountidOutput := terraform.Output(t, terraformOptions, "account_id")
-	t.Log(accountidOutput)
+	// Retrieve the 'test_success' outputs
+	testSuccessOutput := terraform.Output(t, terraformOptions, "test_success")
+	t.Logf("testSuccessOutput: %s", testSuccessOutput)
 
-	inputOutput := terraform.Output(t, terraformOptions, "input")
-	t.Log(inputOutput)
-	// Do testing. I.E check if your ressources are deployed via AWS GO SDK
+	// Assert that 'test_success' equals "true"
+	assert.Equal(t, "true", testSuccessOutput, "The test_success output is not true")
 }

@@ -1,4 +1,7 @@
-output "example_complete" {
-  description = "example_complete"
-  value       = module.example_complete
+output "preprocess_data" {
+  value = module.preprocess_data
+}
+
+output "test_success" {
+  value = true
 }

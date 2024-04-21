@@ -1,57 +1,92 @@
-# AWS REPLACE_ME Terraform module
+# terraform-aws-acf-ou-mgmt Terraform module
 
 <!-- LOGO -->
 <a href="https://acai.gmbh">    
-  <img src="https://acai.gmbh/images/logo/logo-acai-badge.png" alt="acai logo" title="ACAI" align="right" height="100" />
+  <img src="https://github.com/acai-consulting/acai.public/raw/main/logo/logo_github_readme.png" alt="acai logo" title="ACAI" align="right" height="75" />
 </a>
 
 <!-- SHIELDS -->
 [![Maintained by acai.gmbh][acai-shield]][acai-url]
-[![Terraform Version][terraform-version-shield]][terraform-version-url]
+![module-version-shield]
+![terraform-version-shield]
+![trivy-shield]
+![checkov-shield]
 [![Latest Release][release-shield]][release-url]
 
 <!-- DESCRIPTION -->
-[Terraform][terraform-url] module to deploy REPLACE_ME resources on [AWS][aws-url]
+Manage your AWS Organization
 
-<!-- ARCHITECTURE -->
-## Architecture
-![architecture][architecture-png]
+[Terraform][terraform-url] module to deploy REPLACE_ME resources on [AWS][aws-url]
 
 <!-- FEATURES -->
 ## Features
-* Creates a REPLACE_ME
 
-<!-- USAGE -->
-## Usage
+### Delegation
 
-### REPLACE_ME
-```hcl
-module "REPLACE_ME" {
-  source  = "acai/REPLACE_ME/aws"
-  version = "~> 1.0"
 
-  input1 = "value1"
+
+### OU-Structure
+
+Will provision the AWS Organization Unit (OU) structure based on a given HCL map.
+
+``` hcl
+locals {
+  # OU-Names are case-sensitive!!!
+  organizational_units = {
+    level1_units : [
+      # Artificial Org Structure
+      {
+        name : "level1_unit1",
+        level2_units : [
+          {
+            name : "level1_unit1__level2_unit1"
+          },
+          {
+            name : "level1_unit1__level2_unit2",
+            level3_units = [
+              {
+                name : "level1_unit1__level2_unit2__level3_unit1",
+                tags : {
+                  "key1" : "value 1",
+                  "key2" : "value 2"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name : "level1_unit2",
+        level2_units : [
+          {
+            name : "level1_unit2__level2_unit1"
+          },
+          {
+            name : "level1_unit2__level2_unit2"
+          },
+          {
+            name : "level1_unit2__level2_unit3"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```
-
-<!-- EXAMPLES -->
-## Examples
-
-* [`examples/complete`][example-complete-url]
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.10 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.30 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.30 |
 
 ## Modules
 
@@ -61,48 +96,52 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_caller_identity.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_auditmanager_organization_admin_account_registration.auditmanager](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/auditmanager_organization_admin_account_registration) | resource |
+| [aws_config_aggregate_authorization.config_delegation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/config_aggregate_authorization) | resource |
+| [aws_detective_organization_admin_account.detective](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/detective_organization_admin_account) | resource |
+| [aws_fms_admin_account.fms](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/fms_admin_account) | resource |
+| [aws_guardduty_detector.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector) | resource |
+| [aws_guardduty_organization_admin_account.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_organization_admin_account) | resource |
+| [aws_inspector2_delegated_admin_account.inspector](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/inspector2_delegated_admin_account) | resource |
+| [aws_organizations_delegated_administrator.delegations](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/organizations_delegated_administrator) | resource |
+| [aws_organizations_resource_policy.aws_organizations_resource_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/organizations_resource_policy) | resource |
+| [aws_securityhub_account.securityhub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_account) | resource |
+| [aws_securityhub_organization_admin_account.securityhub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_organization_admin_account) | resource |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_aws_organizations_resource_policy_json"></a> [aws\_organizations\_resource\_policy\_json](#input\_aws\_organizations\_resource\_policy\_json) | JSON of the AWS Organizations Delegation. Ensure this is only specified in one instance of this module | `string` | `null` | no |
+| <a name="input_delegations"></a> [delegations](#input\_delegations) | List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators. | <pre>list(object({<br>    service_principal : string # https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html<br>    target_account_id : string<br>    aggregation_region : optional(string)<br>    additional_settings = optional(map(string))<br>  }))</pre> | `[]` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_account_id"></a> [account\_id](#output\_account\_id) | account\_id |
-| <a name="output_input"></a> [input](#output\_input) | pass through input |
+| <a name="output_delegations"></a> [delegations](#output\_delegations) | List of AWS Organizations Delegated Administrators created. |
 <!-- END_TF_DOCS -->
 
 <!-- AUTHORS -->
 ## Authors
 
-This module is maintained by [ACAI GmbH][acai-url] with help from [these amazing contributors][contributors-url]
+This module is maintained by [ACAI GmbH][acai-url].
 
 <!-- LICENSE -->
 ## License
 
-This module is licensed under Apache 2.0
-<br />
-See [LICENSE][license-url] for full details
-
-<!-- COPYRIGHT -->
-<br />
-<br />
-<p align="center">Copyright &copy; 2024 ACAI GmbH</p>
+See [LICENSE][license-url] for full details.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [acai-shield]: https://img.shields.io/badge/maintained_by-acai.gmbh-CB224B?style=flat
 [acai-url]: https://acai.gmbh
-[terraform-version-shield]: https://img.shields.io/badge/tf-%3E%3D0.15.0-blue.svg?style=flat&color=blueviolet
-[terraform-version-url]: https://www.terraform.io/upgrade-guides/0-15.html
-[release-shield]: https://img.shields.io/github/v/release/acai-consulting/REPLACE_ME?style=flat&color=success
-[architecture-png]: https://github.com/acai-consulting/REPLACE_ME/blob/main/docs/architecture.png?raw=true
-[release-url]: https://github.com/acai-consulting/REPLACE_ME/releases
-[contributors-url]: https://github.com/acai-consulting/REPLACE_ME/graphs/contributors
-[license-url]: https://github.com/acai-consulting/REPLACE_ME/tree/main/LICENSE
+[module-version-shield]: https://img.shields.io/badge/module_version-1.1.4-CB224B?style=flat
+[terraform-version-shield]: https://img.shields.io/badge/tf-%3E%3D1.3.0-blue.svg?style=flat&color=blueviolet
+[trivy-shield]: https://img.shields.io/badge/trivy-passed-green
+[checkov-shield]: https://img.shields.io/badge/checkov-passed-green
+[release-shield]: https://img.shields.io/github/v/release/acai-consulting/terraform-aws-acf-ou-mgmt?style=flat&color=success
+[release-url]: https://github.com/acai-consulting/terraform-aws-acf-ou-mgmt/releases
+[license-url]: https://github.com/acai-consulting/terraform-aws-acf-ou-mgmt/tree/main/LICENSE.md
 [terraform-url]: https://www.terraform.io
 [aws-url]: https://aws.amazon.com
-[example-complete-url]: https://github.com/acai-consulting/REPLACE_ME/tree/main/examples/complete
