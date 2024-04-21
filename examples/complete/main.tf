@@ -22,11 +22,6 @@ locals {
   default_regions = ["eu-central-1", "us-east-2"]
   delegations = [
     {
-      regions           = ["us-east-1"]
-      service_principal = "fms.amazonaws.com"
-      target_account_id = "992382728088" # core_security
-    },
-    {
       regions           = local.default_regions
       service_principal = "guardduty.amazonaws.com"
       target_account_id = "992382728088" # core_security      
