@@ -198,6 +198,7 @@ resource "aws_inspector2_delegated_admin_account" "inspector" {
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DELEGATION - fms.amazonaws.com
+# once delegated, it can only be revoked from the delegated account
 # ---------------------------------------------------------------------------------------------------------------------
 locals {
   fms_delegation       = contains([for d in var.delegations : d.service_principal], "fms.amazonaws.com")
@@ -213,5 +214,9 @@ resource "aws_fms_admin_account" "fms" {
       condition     = local.is_use1
       error_message = "FMS can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
     }
+    ignore_changes = [
+      account_id, # Adding this to ignore changes in account_id during applies and destroys
+    ]
+    prevent_destroy = false 
   }
 }
