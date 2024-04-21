@@ -13,12 +13,6 @@ terraform {
   }
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# ¦ DATA
-# ---------------------------------------------------------------------------------------------------------------------
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ MODULE
@@ -41,9 +35,6 @@ locals {
       regions           = local.default_regions
       service_principal = "securityhub.amazonaws.com"
       target_account_id = "992382728088" # core_security
-      additional_settings = {
-        auto_enable = true
-      }
     },
     {
       regions           = local.default_regions
@@ -56,9 +47,6 @@ locals {
 module "preprocess_data" {
   source      = "../../modules/preprocess-data"
   delegations = local.delegations
-  additional_aws_service_access_principals = [
-    "stacksets.cloudformation.amazonaws.com"
-  ]
 }
 
 module "example_euc1" {

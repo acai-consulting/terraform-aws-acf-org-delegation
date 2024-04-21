@@ -8,9 +8,6 @@ guardduty.amazonaws.com
 detective.amazonaws.com
 inspector2.amazonaws.com
 fms.amazonaws.com
-ipam.amazonaws.com
-macie.amazonaws.com
-
 
 pending:
 backup.amazonaws.com
@@ -222,41 +219,4 @@ resource "aws_fms_admin_account" "fms" {
       error_message = "FMS can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
     }
   }
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ¦ DELEGATION - ipam.amazonaws.com
-# ---------------------------------------------------------------------------------------------------------------------
-locals {
-  ipam_delegation       = contains([for d in var.delegations : d.service_principal], "ipam.amazonaws.com")
-  ipam_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "ipam.amazonaws.com"][0], null)
-}
-
-resource "aws_vpc_ipam_organization_admin_account" "ipam" {
-  count = local.ipam_delegation ? 1 : 0
-
-  delegated_admin_account_id = local.ipam_admin_account_id
-}
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# ¦ DELEGATION - macie.amazonaws.com
-# ---------------------------------------------------------------------------------------------------------------------
-locals {
-  macie_delegation       = contains([for d in var.delegations : d.service_principal], "macie.amazonaws.com")
-  macie_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "macie.amazonaws.com"][0], null)
-}
-
-resource "aws_macie2_account" "macie" {
-  count = local.macie_delegation ? 1 : 0
-}
-
-resource "aws_macie2_organization_admin_account" "macie" {
-  count = local.macie_delegation ? 1 : 0
-
-  admin_account_id = local.macie_admin_account_id
-  depends_on = [
-    aws_macie2_account.macie
-  ]
 }

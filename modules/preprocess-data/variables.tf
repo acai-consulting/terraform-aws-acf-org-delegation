@@ -14,9 +14,3 @@ variable "delegations" {
     error_message = "Each 'target_account_id' must be a 12-digit AWS account ID."
   }
 }
-
-# https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html
-variable "additional_aws_service_access_principals" {
-  type    = list(string)
-  default = []
-}

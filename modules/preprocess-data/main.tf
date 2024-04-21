@@ -24,12 +24,5 @@ locals {
     ]
   }
 
-  excepted_service_principals = [
-    "stacksets.cloudformation.amazonaws.com"
-  ]
-
-  aws_service_access_principals = distinct(concat(
-    [for access_principal in var.additional_aws_service_access_principals : access_principal if contains(local.excepted_service_principals, access_principal) == false],
-    [for delegation in var.delegations : delegation.service_principal if contains(local.excepted_service_principals, delegation.service_principal) == false]
-  ))
+  aws_service_access_principals = distinct([for delegation in var.delegations : delegation.service_principal])
 }
