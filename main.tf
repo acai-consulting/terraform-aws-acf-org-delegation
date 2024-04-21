@@ -217,6 +217,6 @@ resource "aws_fms_admin_account" "fms" {
     ignore_changes = [
       account_id, # Adding this to ignore changes in account_id during applies and destroys
     ]
-    prevent_destroy = false 
+    prevent_destroy = false
   }
 }
