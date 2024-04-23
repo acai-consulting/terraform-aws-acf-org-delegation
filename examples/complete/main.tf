@@ -33,7 +33,6 @@ module "create_provisioner" {
 }
 
 provider "aws" {
-  profile = "acai_testbed"
   region  = "eu-central-1"
   alias   = "org_mgmt_euc1"
   assume_role {
@@ -42,7 +41,6 @@ provider "aws" {
 }
 
 provider "aws" {
-  profile = "acai_testbed"
   region  = "us-east-1"
   alias   = "org_mgmt_use1"
   assume_role {
@@ -51,7 +49,6 @@ provider "aws" {
 }
 
 provider "aws" {
-  profile = "acai_testbed"
   region  = "us-east-2"
   alias   = "org_mgmt_use2"
   assume_role {
