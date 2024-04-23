@@ -65,7 +65,7 @@ provider "aws" {
 
 locals {
   primary_aws_region = "eu-central-1"
-  default_regions = ["eu-central-1", "us-east-2"]
+  default_regions    = ["eu-central-1", "us-east-2"]
   delegations = [
     {
       regions           = ["us-east-1"]
@@ -103,7 +103,7 @@ module "preprocess_data" {
 module "example_euc1" {
   source = "../../"
 
-  delegations = module.preprocess_data.delegations_by_region["eu-central-1"]
+  delegations        = module.preprocess_data.delegations_by_region["eu-central-1"]
   primary_aws_region = local.primary_aws_region
   providers = {
     aws = aws.org_mgmt_euc1
@@ -151,8 +151,8 @@ module "example_use1" {
   providers = {
     aws = aws.org_mgmt_use1
   }
-  depends_on = [ 
-    module.create_provisioner, 
+  depends_on = [
+    module.create_provisioner,
     module.example_euc1
   ]
 }
@@ -160,13 +160,13 @@ module "example_use1" {
 module "example_use2" {
   source = "../../"
 
-  delegations = module.preprocess_data.delegations_by_region["us-east-2"]
+  delegations        = module.preprocess_data.delegations_by_region["us-east-2"]
   primary_aws_region = local.primary_aws_region
   providers = {
     aws = aws.org_mgmt_use2
   }
-  depends_on = [ 
-    module.create_provisioner, 
+  depends_on = [
+    module.create_provisioner,
     module.example_euc1
   ]
 }

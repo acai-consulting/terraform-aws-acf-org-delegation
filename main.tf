@@ -34,7 +34,7 @@ terraform {
 data "aws_region" "current" {}
 
 locals {
-  is_use1 = data.aws_region.current.name == "us-east-1"
+  is_use1           = data.aws_region.current.name == "us-east-1"
   is_primary_region = data.aws_region.current.name == var.primary_aws_region
 }
 
@@ -68,7 +68,7 @@ locals {
 }
 
 resource "aws_organizations_delegated_administrator" "delegations" {
-  count = length([for del in local.common_delegations : del if local.is_primary_region])
+  count    = length([for del in local.common_delegations : del if local.is_primary_region])
   for_each = { for del in local.common_delegations : "${del.target_account_id}/${del.service_principal}" => del }
 
   account_id        = each.value.target_account_id
