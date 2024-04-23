@@ -48,6 +48,17 @@ data "aws_iam_policy_document" "org_delegation_policy" {
   statement {
     effect = "Allow"
     actions = [
+      "organizations:TagResource",
+      "organizations:UntagResource"
+    ]
+    resources = ["arn:aws:organizations::*:resourcepolicy/*/rp-*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "organizations:TagResource",
+      "organizations:UntagResource",
+
       "organizations:List*",
       "organizations:Describe*",
       "organizations:PutResourcePolicy",

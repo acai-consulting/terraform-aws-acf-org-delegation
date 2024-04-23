@@ -29,12 +29,6 @@ func TestExampleComplete(t *testing.T) {
 		TerraformDir: terraformDir,
 		NoColor:      false,
 		Lock:         true,
-		Targets: []string{
-			"module.preprocess_data",
-			"module.example_euc1",
-			"module.example_use1",
-			"module.example_use2",
-		},
 	}
 	defer terraform.Destroy(t, terraformModule)
 	terraform.InitAndApply(t, terraformModule)

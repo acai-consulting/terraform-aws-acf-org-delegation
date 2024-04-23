@@ -30,9 +30,10 @@ locals {
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html
 # This is a global resource - marke sure you specify it only once
 resource "aws_organizations_resource_policy" "aws_organizations_resource_policy" {
-  count = var.aws_organizations_resource_policy_json == null ? 0 : 1
+  count = var.aws_organizations_resource_policy == null ? 0 : 1
 
-  content = var.aws_organizations_resource_policy_json
+  content = var.aws_organizations_resource_policy.content_as_json
+  tags    = var.aws_organizations_resource_policy.resource_tags
 }
 
 
@@ -72,7 +73,7 @@ resource "aws_auditmanager_organization_admin_account_registration" "auditmanage
   count = local.auditmanager_delegation ? 1 : 0
 
   admin_account_id = local.auditmanager_admin_account_id
-  depends_on = [aws_organizations_delegated_administrator.delegations]
+  depends_on       = [aws_organizations_delegated_administrator.delegations]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -205,7 +206,7 @@ locals {
 }
 
 resource "aws_macie2_account" "macie" {
-  count = local.macie_delegation ? 1 : 0
+  count      = local.macie_delegation ? 1 : 0
   depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
@@ -230,6 +231,6 @@ resource "aws_vpc_ipam_organization_admin_account" "ipam" {
   count = local.ipam_delegation ? 1 : 0
 
   delegated_admin_account_id = local.ipam_admin_account_id
-  depends_on = [aws_organizations_delegated_administrator.delegations]
+  depends_on                 = [aws_organizations_delegated_administrator.delegations]
 }
 

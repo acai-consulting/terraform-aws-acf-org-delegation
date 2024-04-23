@@ -123,44 +123,48 @@ module "example_use1" {
   source = "../../"
 
   primary_aws_region = module.preprocess_data.is_primary_region["us-east-1"]
-  delegations        = module.preprocess_data.delegations_by_region["us-east-1"]
-  aws_organizations_resource_policy_json = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Sid" : "AllowOrganizationsRead",
-        "Effect" : "Allow",
-        "Principal" : {
-          "AWS" : "arn:aws:iam::590183833356:root"
+  aws_organizations_resource_policy = {
+    content_as_json = jsonencode({
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowOrganizationsRead",
+          "Effect" : "Allow",
+          "Principal" : {
+            "AWS" : "arn:aws:iam::590183833356:root"
+          },
+          "Action" : [
+            "organizations:Describe*",
+            "organizations:List*"
+          ],
+          "Resource" : "*"
         },
-        "Action" : [
-          "organizations:Describe*",
-          "organizations:List*"
-        ],
-        "Resource" : "*"
-      },
-      {
-        "Sid" : "AllowBackupPoliciesCreation",
-        "Effect" : "Allow",
-        "Principal" : {
-          "AWS" : "arn:aws:iam::590183833356:root"
-        },
-        "Action" : "organizations:CreatePolicy",
-        "Resource" : "*",
-        "Condition" : {
-          "StringEquals" : {
-            "organizations:PolicyType" : "BACKUP_POLICY"
+        {
+          "Sid" : "AllowBackupPoliciesCreation",
+          "Effect" : "Allow",
+          "Principal" : {
+            "AWS" : "arn:aws:iam::590183833356:root"
+          },
+          "Action" : "organizations:CreatePolicy",
+          "Resource" : "*",
+          "Condition" : {
+            "StringEquals" : {
+              "organizations:PolicyType" : "BACKUP_POLICY"
+            }
           }
         }
-      }
-    ]
-  })
+      ]
+    })
+    resource_tags = {
+      "test" : "tag"
+      "test2" : "tag"
+    }
+  }
   providers = {
     aws = aws.org_mgmt_use1
   }
   depends_on = [
     module.create_provisioner,
-    module.example_euc1
   ]
 }
 
