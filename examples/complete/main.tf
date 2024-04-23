@@ -15,6 +15,51 @@ terraform {
 
 
 # ---------------------------------------------------------------------------------------------------------------------
+# ¦ CREATE PROVISIONER
+# ---------------------------------------------------------------------------------------------------------------------
+module "create_provisioner" {
+  source = "../../cicd-principals/terraform"
+
+  iam_role_settings = {
+    name             = "cicd_provisioner"
+    aws_trustee_arns = [
+      "arn:aws:iam::471112796356:root",
+      "arn:aws:iam::471112796356:user/tfc_provisioner"
+    ]
+  }
+  providers = {
+    aws = aws.org_mgmt
+  }
+}
+
+provider "aws" {
+  profile = "acai_testbed"
+  region = "eu-central-1"
+  alias  = "org_mgmt_euc1"
+  assume_role {
+    role_arn = module.create_provisioner.iam_role_arn
+  }
+}
+
+provider "aws" {
+  profile = "acai_testbed"
+  region = "us-east-1"
+  alias  = "org_mgmt_use1"
+  assume_role {
+    role_arn = module.create_provisioner.iam_role_arn
+  }
+}
+
+provider "aws" {
+  profile = "acai_testbed"
+  region = "us-east-2"
+  alias  = "org_mgmt_use2"
+  assume_role {
+    role_arn = module.create_provisioner.iam_role_arn
+  }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
 # ¦ MODULE
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -51,6 +96,7 @@ module "example_euc1" {
   providers = {
     aws = aws.org_mgmt_euc1
   }
+  depends_on = [ module.create_provisioner ]
 }
 
 
@@ -92,8 +138,8 @@ module "example_use1" {
   providers = {
     aws = aws.org_mgmt_use1
   }
+  depends_on = [ module.create_provisioner ]
 }
-
 
 module "example_use2" {
   source = "../../"
@@ -102,4 +148,5 @@ module "example_use2" {
   providers = {
     aws = aws.org_mgmt_use2
   }
+  depends_on = [ module.create_provisioner ]
 }

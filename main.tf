@@ -55,8 +55,8 @@ resource "aws_organizations_resource_policy" "aws_organizations_resource_policy"
 # ---------------------------------------------------------------------------------------------------------------------
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html?icmpid=docs_orgs_console
 locals {
-  special_delegations = [
-    "auditmanager.amazonaws.com",
+  special_delegations = []
+/*    "auditmanager.amazonaws.com",
     "config.amazonaws.com",
     "securityhub.amazonaws.com",
     "guardduty.amazonaws.com",
@@ -65,7 +65,7 @@ locals {
     "fms.amazonaws.com",
     "ipam.amazonaws.com",
     "macie.amazonaws.com",
-  ]
+  ]*/
   common_delegations = [for delegation in var.delegations :
     {
       service_principal = delegation.service_principal,
@@ -75,7 +75,7 @@ locals {
 }
 
 resource "aws_organizations_delegated_administrator" "delegations" {
-  for_each = { for del in local.common_delegations : "${del.service_principal}:${del.target_account_id}" => del }
+  for_each = { for del in local.common_delegations : "${del.target_account_id}/${del.service_principal}" => del }
 
   account_id        = each.value.target_account_id
   service_principal = each.value.service_principal
@@ -131,15 +131,14 @@ resource "aws_securityhub_account" "securityhub" {
       control_finding_generator # https://github.com/hashicorp/terraform-provider-aws/issues/30980
     ]
   }
+  depends_on = [ aws_organizations_delegated_administrator.delegations ]
 }
 
 resource "aws_securityhub_organization_admin_account" "securityhub" {
   count = local.securityhub_delegation ? 1 : 0
 
   admin_account_id = local.securityhub_admin_account_id
-  depends_on = [
-    aws_securityhub_account.securityhub
-  ]
+  depends_on = [ aws_securityhub_account.securityhub ]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -154,15 +153,14 @@ locals {
 resource "aws_guardduty_detector" "guardduty" {
   #checkov:skip=CKV2_AWS_3
   count = local.guardduty_delegation ? 1 : 0
+  depends_on = [ aws_organizations_delegated_administrator.delegations ]
 }
 
 resource "aws_guardduty_organization_admin_account" "guardduty" {
   count = local.guardduty_delegation ? 1 : 0
 
   admin_account_id = local.guardduty_admin_account_id
-  depends_on = [
-    aws_guardduty_detector.guardduty
-  ]
+  depends_on = [ aws_guardduty_detector.guardduty ]
 }
 
 
