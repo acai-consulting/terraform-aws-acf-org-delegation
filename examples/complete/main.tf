@@ -33,24 +33,24 @@ module "create_provisioner" {
 }
 
 provider "aws" {
-  region  = "eu-central-1"
-  alias   = "org_mgmt_euc1"
+  region = "eu-central-1"
+  alias  = "org_mgmt_euc1"
   assume_role {
     role_arn = module.create_provisioner.iam_role_arn
   }
 }
 
 provider "aws" {
-  region  = "us-east-1"
-  alias   = "org_mgmt_use1"
+  region = "us-east-1"
+  alias  = "org_mgmt_use1"
   assume_role {
     role_arn = module.create_provisioner.iam_role_arn
   }
 }
 
 provider "aws" {
-  region  = "us-east-2"
-  alias   = "org_mgmt_use2"
+  region = "us-east-2"
+  alias  = "org_mgmt_use2"
   assume_role {
     role_arn = module.create_provisioner.iam_role_arn
   }
