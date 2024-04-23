@@ -25,6 +25,11 @@ $${resource_tags_block}
             Statement:
               - Effect: Allow
                 Action:
+                  - "organizations:TagResource"
+                  - "organizations:UntagResource"
+                Resource: "arn:aws:organizations::*:resourcepolicy/*/rp-*"
+              - Effect: Allow
+                Action:
                   - "organizations:List*"
                   - "organizations:Describe*"
                   - "organizations:PutResourcePolicy"
