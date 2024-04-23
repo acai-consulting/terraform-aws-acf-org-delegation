@@ -14,7 +14,7 @@
 [![Latest Release][release-shield]][release-url]
 
 <!-- DESCRIPTION -->
-Manage your AWS Organization
+Manage your AWS Organization delegation
 
 [Terraform][terraform-url] module to deploy REPLACE_ME resources on [AWS][aws-url]
 
@@ -23,54 +23,89 @@ Manage your AWS Organization
 
 ### Delegation
 
-
-
-### OU-Structure
-
-Will provision the AWS Organization Unit (OU) structure based on a given HCL map.
-
 ``` hcl
 locals {
-  # OU-Names are case-sensitive!!!
-  organizational_units = {
-    level1_units : [
-      # Artificial Org Structure
-      {
-        name : "level1_unit1",
-        level2_units : [
-          {
-            name : "level1_unit1__level2_unit1"
-          },
-          {
-            name : "level1_unit1__level2_unit2",
-            level3_units = [
-              {
-                name : "level1_unit1__level2_unit2__level3_unit1",
-                tags : {
-                  "key1" : "value 1",
-                  "key2" : "value 2"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name : "level1_unit2",
-        level2_units : [
-          {
-            name : "level1_unit2__level2_unit1"
-          },
-          {
-            name : "level1_unit2__level2_unit2"
-          },
-          {
-            name : "level1_unit2__level2_unit3"
-          }
-        ]
-      }
-    ]
+  primary_aws_region = "eu-central-1"
+  default_regions    = ["eu-central-1", "us-east-2"]
+  delegations = [
+    {
+      regions           = ["us-east-1"]
+      service_principal = "cloudtrail.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = local.default_regions
+      service_principal = "guardduty.amazonaws.com"
+      target_account_id = "992382728088" # core_security      
+    },
+    {
+      regions           = local.default_regions
+      service_principal = "securityhub.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "backup.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
+      target_account_id = "590183833356" # core_logging
+    }
+  ]
+}
+
+module "preprocess_data" {
+  source = "../../modules/preprocess-data"
+
+  primary_aws_region = local.primary_aws_region
+  delegations        = local.delegations
+}
+
+module "example_euc1" {
+  source = "../../"
+
+  primary_aws_region = module.preprocess_data.is_primary_region["eu-central-1"]
+  delegations        = module.preprocess_data.delegations_by_region["eu-central-1"]
+  providers = {
+    aws = aws.org_mgmt_euc1
   }
+  depends_on = [module.create_provisioner]
+}
+
+
+module "example_use1" {
+  source = "../../"
+
+  primary_aws_region = module.preprocess_data.is_primary_region["us-east-1"]
+  delegations        = module.preprocess_data.delegations_by_region["us-east-1"]
+  providers = {
+    aws = aws.org_mgmt_use1
+  }
+  depends_on = [
+    module.create_provisioner,
+    module.example_euc1
+  ]
+}
+
+module "example_use2" {
+  source = "../../"
+
+  primary_aws_region = module.preprocess_data.is_primary_region["us-east-2"]
+  delegations        = module.preprocess_data.delegations_by_region["us-east-2"]
+  providers = {
+    aws = aws.org_mgmt_use2
+  }
+  depends_on = [
+    module.create_provisioner,
+    module.example_euc1
+  ]
 }
 ```
 

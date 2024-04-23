@@ -1,17 +1,3 @@
-/*
-special delegated admistration configurations for
-
-auditmanager.amazonaws.com
-config.amazonaws.com
-securityhub.amazonaws.com
-guardduty.amazonaws.com
-detective.amazonaws.com
-inspector2.amazonaws.com
-fms.amazonaws.com
-
-pending:
-backup.amazonaws.com
-*/
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ REQUIREMENTS
 # ---------------------------------------------------------------------------------------------------------------------
@@ -86,6 +72,7 @@ resource "aws_auditmanager_organization_admin_account_registration" "auditmanage
   count = local.auditmanager_delegation ? 1 : 0
 
   admin_account_id = local.auditmanager_admin_account_id
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -102,6 +89,7 @@ resource "aws_config_aggregate_authorization" "config_delegation" {
 
   account_id = local.config_admin_account_id
   region     = local.config_aggregation_region
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 
@@ -168,6 +156,7 @@ resource "aws_detective_organization_admin_account" "detective" {
   count = local.detective_delegation ? 1 : 0
 
   account_id = local.detective_admin_account_id
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 
@@ -204,9 +193,43 @@ resource "aws_fms_admin_account" "fms" {
       condition     = local.is_use1
       error_message = "FMS can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
     }
-    ignore_changes = [
-      account_id, # Adding this to ignore changes in account_id during applies and destroys
-    ]
-    prevent_destroy = false
   }
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ DELEGATION - macie.amazonaws.com
+# ---------------------------------------------------------------------------------------------------------------------
+locals {
+  macie_delegation       = contains([for d in var.delegations : d.service_principal], "macie.amazonaws.com")
+  macie_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "macie.amazonaws.com"][0], null)
+}
+
+resource "aws_macie2_account" "macie" {
+  count = local.macie_delegation ? 1 : 0
+  depends_on = [aws_organizations_delegated_administrator.delegations]
+}
+
+resource "aws_macie2_organization_admin_account" "macie" {
+  count = local.macie_delegation ? 1 : 0
+
+  admin_account_id = local.macie_admin_account_id
+  depends_on = [
+    aws_macie2_account.macie
+  ]
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ DELEGATION - ipam.amazonaws.com
+# ---------------------------------------------------------------------------------------------------------------------
+locals {
+  ipam_delegation       = contains([for d in var.delegations : d.service_principal], "ipam.amazonaws.com")
+  ipam_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "ipam.amazonaws.com"][0], null)
+}
+
+resource "aws_vpc_ipam_organization_admin_account" "ipam" {
+  count = local.ipam_delegation ? 1 : 0
+
+  delegated_admin_account_id = local.ipam_admin_account_id
+  depends_on = [aws_organizations_delegated_administrator.delegations]
+}
+
