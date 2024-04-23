@@ -1,3 +1,9 @@
+variable "primary_aws_region" {
+  description = "Name of the primary AWS Region."
+  type        = string
+  default     = "us-east-1"
+}
+
 variable "delegations" {
   description = "List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators."
   type = list(object({
@@ -14,3 +20,4 @@ variable "delegations" {
     error_message = "Each 'target_account_id' must be a 12-digit AWS account ID."
   }
 }
+

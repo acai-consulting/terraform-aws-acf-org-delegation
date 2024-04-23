@@ -1,3 +1,9 @@
+variable "primary_aws_region" {
+  description = "Explicitly decide if this is the primary AWS Regin. May only be done for one region."
+  type        = bool
+  default     = false
+}
+
 variable "delegations" {
   description = "List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators."
   type = list(object({
@@ -14,8 +20,11 @@ variable "delegations" {
   }
 }
 
-variable "aws_organizations_resource_policy_json" {
+variable "aws_organizations_resource_policy" {
   description = "JSON of the AWS Organizations Delegation. Ensure this is only specified in one instance of this module"
-  type        = string
-  default     = null
+  type = object({
+    content_as_json = string
+    resource_tags   = optional(map(string))
+  })
+  default = null
 }

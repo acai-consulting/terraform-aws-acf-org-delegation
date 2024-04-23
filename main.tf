@@ -1,17 +1,3 @@
-/*
-special delegated admistration configurations for
-
-auditmanager.amazonaws.com
-config.amazonaws.com
-securityhub.amazonaws.com
-guardduty.amazonaws.com
-detective.amazonaws.com
-inspector2.amazonaws.com
-fms.amazonaws.com
-
-pending:
-backup.amazonaws.com
-*/
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ REQUIREMENTS
 # ---------------------------------------------------------------------------------------------------------------------
@@ -44,9 +30,10 @@ locals {
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html
 # This is a global resource - marke sure you specify it only once
 resource "aws_organizations_resource_policy" "aws_organizations_resource_policy" {
-  count = var.aws_organizations_resource_policy_json == null ? 0 : 1
+  count = var.aws_organizations_resource_policy == null ? 0 : 1
 
-  content = var.aws_organizations_resource_policy_json
+  content = var.aws_organizations_resource_policy.content_as_json
+  tags    = var.aws_organizations_resource_policy.resource_tags
 }
 
 
@@ -55,32 +42,24 @@ resource "aws_organizations_resource_policy" "aws_organizations_resource_policy"
 # ---------------------------------------------------------------------------------------------------------------------
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html?icmpid=docs_orgs_console
 locals {
-  special_delegations = [
-    "auditmanager.amazonaws.com",
-    "config.amazonaws.com",
-    "securityhub.amazonaws.com",
-    "guardduty.amazonaws.com",
-    "detective.amazonaws.com",
-    "inspector2.amazonaws.com",
-    "fms.amazonaws.com",
-    "ipam.amazonaws.com",
-    "macie.amazonaws.com",
+  skipped_delegations = [
+    "stacksets.cloudformation.amazonaws.com",
+    "fms.amazonaws.com"
   ]
   common_delegations = [for delegation in var.delegations :
     {
       service_principal = delegation.service_principal,
       target_account_id = delegation.target_account_id
-    } if !contains(local.special_delegations, delegation.service_principal)
+    } if !contains(local.skipped_delegations, delegation.service_principal) && var.primary_aws_region == true
   ]
 }
 
 resource "aws_organizations_delegated_administrator" "delegations" {
-  for_each = { for del in local.common_delegations : "${del.service_principal}:${del.target_account_id}" => del }
+  for_each = { for del in local.common_delegations : "${del.target_account_id}/${del.service_principal}" => del }
 
   account_id        = each.value.target_account_id
   service_principal = each.value.service_principal
 }
-
 
 # ---------------------------------------------------------------------------------------------------------------------
 # ¦ DELEGATION - auditmanager.amazonaws.com
@@ -94,6 +73,7 @@ resource "aws_auditmanager_organization_admin_account_registration" "auditmanage
   count = local.auditmanager_delegation ? 1 : 0
 
   admin_account_id = local.auditmanager_admin_account_id
+  depends_on       = [aws_organizations_delegated_administrator.delegations]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -110,6 +90,7 @@ resource "aws_config_aggregate_authorization" "config_delegation" {
 
   account_id = local.config_admin_account_id
   region     = local.config_aggregation_region
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 
@@ -131,15 +112,14 @@ resource "aws_securityhub_account" "securityhub" {
       control_finding_generator # https://github.com/hashicorp/terraform-provider-aws/issues/30980
     ]
   }
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 resource "aws_securityhub_organization_admin_account" "securityhub" {
   count = local.securityhub_delegation ? 1 : 0
 
   admin_account_id = local.securityhub_admin_account_id
-  depends_on = [
-    aws_securityhub_account.securityhub
-  ]
+  depends_on       = [aws_securityhub_account.securityhub]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -153,16 +133,15 @@ locals {
 
 resource "aws_guardduty_detector" "guardduty" {
   #checkov:skip=CKV2_AWS_3
-  count = local.guardduty_delegation ? 1 : 0
+  count      = local.guardduty_delegation ? 1 : 0
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 resource "aws_guardduty_organization_admin_account" "guardduty" {
   count = local.guardduty_delegation ? 1 : 0
 
   admin_account_id = local.guardduty_admin_account_id
-  depends_on = [
-    aws_guardduty_detector.guardduty
-  ]
+  depends_on       = [aws_guardduty_detector.guardduty]
 }
 
 
@@ -178,6 +157,7 @@ resource "aws_detective_organization_admin_account" "detective" {
   count = local.detective_delegation ? 1 : 0
 
   account_id = local.detective_admin_account_id
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 
@@ -214,9 +194,43 @@ resource "aws_fms_admin_account" "fms" {
       condition     = local.is_use1
       error_message = "FMS can only be delegated in 'us-east-1'. Current provider region is '${data.aws_region.current.name}'."
     }
-    ignore_changes = [
-      account_id, # Adding this to ignore changes in account_id during applies and destroys
-    ]
-    prevent_destroy = false
   }
 }
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ DELEGATION - macie.amazonaws.com
+# ---------------------------------------------------------------------------------------------------------------------
+locals {
+  macie_delegation       = contains([for d in var.delegations : d.service_principal], "macie.amazonaws.com")
+  macie_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "macie.amazonaws.com"][0], null)
+}
+
+resource "aws_macie2_account" "macie" {
+  count      = local.macie_delegation ? 1 : 0
+  depends_on = [aws_organizations_delegated_administrator.delegations]
+}
+
+resource "aws_macie2_organization_admin_account" "macie" {
+  count = local.macie_delegation ? 1 : 0
+
+  admin_account_id = local.macie_admin_account_id
+  depends_on = [
+    aws_macie2_account.macie
+  ]
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# ¦ DELEGATION - ipam.amazonaws.com
+# ---------------------------------------------------------------------------------------------------------------------
+locals {
+  ipam_delegation       = contains([for d in var.delegations : d.service_principal], "ipam.amazonaws.com")
+  ipam_admin_account_id = try([for d in var.delegations : d.target_account_id if d.service_principal == "ipam.amazonaws.com"][0], null)
+}
+
+resource "aws_vpc_ipam_organization_admin_account" "ipam" {
+  count = local.ipam_delegation ? 1 : 0
+
+  delegated_admin_account_id = local.ipam_admin_account_id
+  depends_on                 = [aws_organizations_delegated_administrator.delegations]
+}
+

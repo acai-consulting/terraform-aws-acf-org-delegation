@@ -14,4 +14,8 @@ output "aws_service_access_principals" {
   value       = local.aws_service_access_principals
 }
 
+output "is_primary_region" {
+  description = "is_primary_region"
+  value       = local.is_primary_region
+}
 

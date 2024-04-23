@@ -14,7 +14,7 @@
 [![Latest Release][release-shield]][release-url]
 
 <!-- DESCRIPTION -->
-Manage your AWS Organization
+Manage your AWS Organization delegation
 
 [Terraform][terraform-url] module to deploy REPLACE_ME resources on [AWS][aws-url]
 
@@ -23,54 +23,89 @@ Manage your AWS Organization
 
 ### Delegation
 
-
-
-### OU-Structure
-
-Will provision the AWS Organization Unit (OU) structure based on a given HCL map.
-
 ``` hcl
 locals {
-  # OU-Names are case-sensitive!!!
-  organizational_units = {
-    level1_units : [
-      # Artificial Org Structure
-      {
-        name : "level1_unit1",
-        level2_units : [
-          {
-            name : "level1_unit1__level2_unit1"
-          },
-          {
-            name : "level1_unit1__level2_unit2",
-            level3_units = [
-              {
-                name : "level1_unit1__level2_unit2__level3_unit1",
-                tags : {
-                  "key1" : "value 1",
-                  "key2" : "value 2"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        name : "level1_unit2",
-        level2_units : [
-          {
-            name : "level1_unit2__level2_unit1"
-          },
-          {
-            name : "level1_unit2__level2_unit2"
-          },
-          {
-            name : "level1_unit2__level2_unit3"
-          }
-        ]
-      }
-    ]
+  primary_aws_region = "eu-central-1"
+  default_regions    = ["eu-central-1", "us-east-2"]
+  delegations = [
+    {
+      regions           = ["us-east-1"]
+      service_principal = "cloudtrail.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = local.default_regions
+      service_principal = "guardduty.amazonaws.com"
+      target_account_id = "992382728088" # core_security      
+    },
+    {
+      regions           = local.default_regions
+      service_principal = "securityhub.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "backup.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
+      target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
+      target_account_id = "590183833356" # core_logging
+    }
+  ]
+}
+
+module "preprocess_data" {
+  source = "../../modules/preprocess-data"
+
+  primary_aws_region = local.primary_aws_region
+  delegations        = local.delegations
+}
+
+module "example_euc1" {
+  source = "../../"
+
+  primary_aws_region = module.preprocess_data.is_primary_region["eu-central-1"]
+  delegations        = module.preprocess_data.delegations_by_region["eu-central-1"]
+  providers = {
+    aws = aws.org_mgmt_euc1
   }
+  depends_on = [module.create_provisioner]
+}
+
+
+module "example_use1" {
+  source = "../../"
+
+  primary_aws_region = module.preprocess_data.is_primary_region["us-east-1"]
+  delegations        = module.preprocess_data.delegations_by_region["us-east-1"]
+  providers = {
+    aws = aws.org_mgmt_use1
+  }
+  depends_on = [
+    module.create_provisioner,
+    module.example_euc1
+  ]
+}
+
+module "example_use2" {
+  source = "../../"
+
+  primary_aws_region = module.preprocess_data.is_primary_region["us-east-2"]
+  delegations        = module.preprocess_data.delegations_by_region["us-east-2"]
+  providers = {
+    aws = aws.org_mgmt_use2
+  }
+  depends_on = [
+    module.create_provisioner,
+    module.example_euc1
+  ]
 }
 ```
 
@@ -103,18 +138,22 @@ No modules.
 | [aws_guardduty_detector.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector) | resource |
 | [aws_guardduty_organization_admin_account.guardduty](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_organization_admin_account) | resource |
 | [aws_inspector2_delegated_admin_account.inspector](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/inspector2_delegated_admin_account) | resource |
+| [aws_macie2_account.macie](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/macie2_account) | resource |
+| [aws_macie2_organization_admin_account.macie](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/macie2_organization_admin_account) | resource |
 | [aws_organizations_delegated_administrator.delegations](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/organizations_delegated_administrator) | resource |
 | [aws_organizations_resource_policy.aws_organizations_resource_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/organizations_resource_policy) | resource |
 | [aws_securityhub_account.securityhub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_account) | resource |
 | [aws_securityhub_organization_admin_account.securityhub](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/securityhub_organization_admin_account) | resource |
+| [aws_vpc_ipam_organization_admin_account.ipam](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc_ipam_organization_admin_account) | resource |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_aws_organizations_resource_policy_json"></a> [aws\_organizations\_resource\_policy\_json](#input\_aws\_organizations\_resource\_policy\_json) | JSON of the AWS Organizations Delegation. Ensure this is only specified in one instance of this module | `string` | `null` | no |
+| <a name="input_aws_organizations_resource_policy"></a> [aws\_organizations\_resource\_policy](#input\_aws\_organizations\_resource\_policy) | JSON of the AWS Organizations Delegation. Ensure this is only specified in one instance of this module | <pre>object({<br>    content_as_json = string<br>    resource_tags   = optional(map(string))<br>  })</pre> | `null` | no |
 | <a name="input_delegations"></a> [delegations](#input\_delegations) | List of delegations specifying the target account ID and service principal for AWS Organizations Delegated Administrators. | <pre>list(object({<br>    service_principal : string # https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html<br>    target_account_id : string<br>    aggregation_region : optional(string)<br>    additional_settings = optional(map(string))<br>  }))</pre> | `[]` | no |
+| <a name="input_primary_aws_region"></a> [primary\_aws\_region](#input\_primary\_aws\_region) | Explicitly decide if this is the primary AWS Regin. May only be done for one region. | `bool` | `false` | no |
 
 ## Outputs
 
