@@ -20,6 +20,16 @@ terraform {
 data "aws_region" "current" {}
 
 locals {
+  resource_tags = var.aws_organizations_resource_policy != null ? merge(
+    var.aws_organizations_resource_policy.resource_tags,
+    {
+      "module_provider" = "ACAI GmbH",
+      "module_name"     = "terraform-aws-acf-org-delegation",
+      "module_source"   = "github.com/acai-consulting/terraform-aws-acf-org-delegation",
+      "module_version"  = /*inject_version_start*/ "1.0.4" /*inject_version_end*/
+    }
+  ) : null
+
   is_use1 = data.aws_region.current.name == "us-east-1"
 }
 
@@ -33,7 +43,7 @@ resource "aws_organizations_resource_policy" "aws_organizations_resource_policy"
   count = var.aws_organizations_resource_policy == null ? 0 : 1
 
   content = var.aws_organizations_resource_policy.content_as_json
-  tags    = var.aws_organizations_resource_policy.resource_tags
+  tags    = local.resource_tags
 }
 
 
