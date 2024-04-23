@@ -124,14 +124,14 @@ resource "aws_securityhub_account" "securityhub" {
       control_finding_generator # https://github.com/hashicorp/terraform-provider-aws/issues/30980
     ]
   }
-  depends_on = [ aws_organizations_delegated_administrator.delegations ]
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 resource "aws_securityhub_organization_admin_account" "securityhub" {
   count = local.securityhub_delegation ? 1 : 0
 
   admin_account_id = local.securityhub_admin_account_id
-  depends_on = [ aws_securityhub_account.securityhub ]
+  depends_on       = [aws_securityhub_account.securityhub]
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -145,15 +145,15 @@ locals {
 
 resource "aws_guardduty_detector" "guardduty" {
   #checkov:skip=CKV2_AWS_3
-  count = local.guardduty_delegation ? 1 : 0
-  depends_on = [ aws_organizations_delegated_administrator.delegations ]
+  count      = local.guardduty_delegation ? 1 : 0
+  depends_on = [aws_organizations_delegated_administrator.delegations]
 }
 
 resource "aws_guardduty_organization_admin_account" "guardduty" {
   count = local.guardduty_delegation ? 1 : 0
 
   admin_account_id = local.guardduty_admin_account_id
-  depends_on = [ aws_guardduty_detector.guardduty ]
+  depends_on       = [aws_guardduty_detector.guardduty]
 }
 
 
