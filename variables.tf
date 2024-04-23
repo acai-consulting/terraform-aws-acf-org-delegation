@@ -28,9 +28,9 @@ variable "aws_organizations_resource_policy_json" {
 
 variable "aws_organizations_resource_policy" {
   description = "JSON of the AWS Organizations Delegation. Ensure this is only specified in one instance of this module"
-  type        = object({
+  type = object({
     content_as_json = string
-    resource_tags = optional(map(string))
+    resource_tags   = optional(map(string))
   })
-  default     = null
+  default = null
 }
