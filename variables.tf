@@ -19,3 +19,10 @@ variable "aws_organizations_resource_policy_json" {
   type        = string
   default     = null
 }
+
+
+variable "primary_aws_region" {
+  description = ""
+  type        = string
+  default     = "us-east-1"
+}
