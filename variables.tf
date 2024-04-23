@@ -22,7 +22,7 @@ variable "aws_organizations_resource_policy_json" {
 
 
 variable "primary_aws_region" {
-  description = ""
-  type        = string
-  default     = "us-east-1"
+  description = "Explicitly decide if this is the primary AWS Regin. May only be done for one region."
+  type        = bool
+  default     = false
 }

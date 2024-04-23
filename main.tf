@@ -35,7 +35,6 @@ data "aws_region" "current" {}
 
 locals {
   is_use1           = data.aws_region.current.name == "us-east-1"
-  is_primary_region = data.aws_region.current.name == var.primary_aws_region
 }
 
 
@@ -57,19 +56,19 @@ resource "aws_organizations_resource_policy" "aws_organizations_resource_policy"
 # See: https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services_list.html?icmpid=docs_orgs_console
 locals {
   skipped_delegations = [
-    "stacksets.cloudformation.amazonaws.com"
+    "stacksets.cloudformation.amazonaws.com",
+    "fms.amazonaws.com"
   ]
   common_delegations = [for delegation in var.delegations :
     {
       service_principal = delegation.service_principal,
       target_account_id = delegation.target_account_id
-    } if !contains(local.skipped_delegations, delegation.service_principal)
+    } if !contains(local.skipped_delegations, delegation.service_principal) && var.primary_aws_region == true
   ]
 }
 
 resource "aws_organizations_delegated_administrator" "delegations" {
-  count    = length([for del in local.common_delegations : del if local.is_primary_region])
-  for_each = { for del in local.common_delegations : "${del.target_account_id}/${del.service_principal}" => del }
+  for_each = { for del in local.common_delegations : "${del.target_account_id}/${del.service_principal}" => del}
 
   account_id        = each.value.target_account_id
   service_principal = each.value.service_principal

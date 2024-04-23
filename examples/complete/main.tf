@@ -91,7 +91,13 @@ locals {
       regions           = [local.primary_aws_region]
       service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
       target_account_id = "992382728088" # core_security
+    },
+    {
+      regions           = [local.primary_aws_region]
+      service_principal = "member.org.stacksets.cloudformation.amazonaws.com"
+      target_account_id = "590183833356" # core_logging
     }
+
   ]
 }
 
@@ -104,7 +110,7 @@ module "example_euc1" {
   source = "../../"
 
   delegations        = module.preprocess_data.delegations_by_region["eu-central-1"]
-  primary_aws_region = local.primary_aws_region
+  primary_aws_region = true
   providers = {
     aws = aws.org_mgmt_euc1
   }
@@ -147,7 +153,7 @@ module "example_use1" {
       }
     ]
   })
-  primary_aws_region = local.primary_aws_region
+  primary_aws_region = false
   providers = {
     aws = aws.org_mgmt_use1
   }
@@ -161,7 +167,7 @@ module "example_use2" {
   source = "../../"
 
   delegations        = module.preprocess_data.delegations_by_region["us-east-2"]
-  primary_aws_region = local.primary_aws_region
+  primary_aws_region = false
   providers = {
     aws = aws.org_mgmt_use2
   }
