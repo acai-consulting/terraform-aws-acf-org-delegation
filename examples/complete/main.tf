@@ -102,15 +102,17 @@ locals {
 }
 
 module "preprocess_data" {
-  source      = "../../modules/preprocess-data"
-  delegations = local.delegations
+  source = "../../modules/preprocess-data"
+
+  primary_aws_region = local.primary_aws_region
+  delegations        = local.delegations
 }
 
 module "example_euc1" {
   source = "../../"
 
+  primary_aws_region = module.preprocess_data.is_primary_region["eu-central-1"]
   delegations        = module.preprocess_data.delegations_by_region["eu-central-1"]
-  primary_aws_region = true
   providers = {
     aws = aws.org_mgmt_euc1
   }
@@ -121,7 +123,8 @@ module "example_euc1" {
 module "example_use1" {
   source = "../../"
 
-  delegations = module.preprocess_data.delegations_by_region["us-east-1"]
+  primary_aws_region = module.preprocess_data.is_primary_region["us-east-1"]
+  delegations        = module.preprocess_data.delegations_by_region["us-east-1"]
   aws_organizations_resource_policy_json = jsonencode({
     "Version" : "2012-10-17",
     "Statement" : [
@@ -153,7 +156,6 @@ module "example_use1" {
       }
     ]
   })
-  primary_aws_region = false
   providers = {
     aws = aws.org_mgmt_use1
   }
@@ -166,8 +168,8 @@ module "example_use1" {
 module "example_use2" {
   source = "../../"
 
+  primary_aws_region = module.preprocess_data.is_primary_region["us-east-2"]
   delegations        = module.preprocess_data.delegations_by_region["us-east-2"]
-  primary_aws_region = false
   providers = {
     aws = aws.org_mgmt_use2
   }

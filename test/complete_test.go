@@ -30,7 +30,10 @@ func TestExampleComplete(t *testing.T) {
 		NoColor:      false,
 		Lock:         true,
 		Targets: []string{
-			"module.example_complete",
+			"module.preprocess_data",
+			"module.example_euc1",
+			"module.example_use1",
+			"module.example_use2",
 		},
 	}
 	defer terraform.Destroy(t, terraformModule)
