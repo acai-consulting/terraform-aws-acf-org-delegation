@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.0...1.0.1) (2024-04-23)
+
+
+### Bug Fixes
+
+* Refine CICD Principal ([#2](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/issues/2)) ([5db0b12](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/commit/5db0b12e6134a31af27635a3005768bd5e6fedc4))
+
 ## 1.0.0 (2024-04-21)
 
 
