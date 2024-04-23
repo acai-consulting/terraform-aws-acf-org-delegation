@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.2](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.1...1.0.2) (2024-04-23)
+
+
+### Bug Fixes
+
+* add module tags, update readme ([#3](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/issues/3)) ([78b77a2](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/commit/78b77a2855fa2f62966baf8adcfdb2931c4942fb))
+
 ## [1.0.1](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.0...1.0.1) (2024-04-23)
 
 
