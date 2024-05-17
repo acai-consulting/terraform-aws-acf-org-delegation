@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.2...1.0.3) (2024-05-17)
+
+
+### Bug Fixes
+
+* updated license  ([#4](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/issues/4)) ([cea4bfd](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/commit/cea4bfd4bca630be762771fad3bf278a0e933dcb))
+
 ## [1.0.2](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.1...1.0.2) (2024-04-23)
 
 
