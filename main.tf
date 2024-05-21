@@ -43,7 +43,6 @@ resource "aws_organizations_resource_policy" "aws_organizations_resource_policy"
   count = var.aws_organizations_resource_policy == null ? 0 : 1
 
   content = var.aws_organizations_resource_policy.content_as_json
-  tags    = local.resource_tags
 }
 
 
