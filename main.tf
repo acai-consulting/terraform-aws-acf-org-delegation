@@ -29,7 +29,7 @@ locals {
       "module_version"  = /*inject_version_start*/ "1.0.3" /*inject_version_end*/
     }
   ) : null
-
+  
   is_use1 = data.aws_region.current.name == "us-east-1"
 }
 
