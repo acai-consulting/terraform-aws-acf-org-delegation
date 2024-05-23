@@ -8,6 +8,6 @@ output "delegations" {
 
 output "resource_tags" {
   description = "resource_tags"
-  value = local.resource_tags
+  value       = local.resource_tags
 }
 
