@@ -26,7 +26,7 @@ locals {
       "module_provider" = "ACAI GmbH",
       "module_name"     = "terraform-aws-acf-org-delegation",
       "module_source"   = "github.com/acai-consulting/terraform-aws-acf-org-delegation",
-      "module_version"  = /*inject_version_start*/ "1.0.3" /*inject_version_end*/
+      "module_version"  = /*inject_version_start*/ "1.0.4" /*inject_version_end*/
     }
   ) : null
 
