@@ -5,3 +5,9 @@ output "delegations" {
     service_principal = del.service_principal
   }]
 }
+
+output "resource_tags" {
+  description = "resource_tags"
+  value = local.resource_tags
+}
+
