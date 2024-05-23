@@ -156,6 +156,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_delegations"></a> [delegations](#output\_delegations) | List of AWS Organizations Delegated Administrators created. |
+| <a name="output_resource_tags"></a> [resource\_tags](#output\_resource\_tags) | resource\_tags |
 <!-- END_TF_DOCS -->
 
 <!-- AUTHORS -->
