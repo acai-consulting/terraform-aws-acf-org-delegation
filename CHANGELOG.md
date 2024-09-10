@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.5](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.4...1.0.5) (2024-09-10)
+
+
+### Bug Fixes
+
+* rename folder ([#6](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/issues/6)) ([7aa6dc8](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/commit/7aa6dc8858752e29c1653ace7c19b07d2a5016f9))
+
 ## [1.0.4](https://github.com/acai-consulting/terraform-aws-acf-org-delegation/compare/1.0.3...1.0.4) (2024-05-23)
 
 
